@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Smart To-Do App</title>
+<style>
+  body {
+    background: #f0f4f8;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    max-width: 480px;
+    margin: 2rem auto;
+    padding: 1rem;
+    box-shadow: 0 0 15px rgba(0,0,0,0.05);
+    border-radius: 10px;
+  }
+  h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 1rem;
+    font-weight: 700;
+  }
+  #inputContainer {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  input[type="text"], input[type="datetime-local"] {
+    flex: 1;
+    padding: 0.6rem 1rem;
+    border-radius: 25px;
+    border: 1.5px solid #ddd;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+  }
+  input[type="text"]:focus, input[type="datetime-local"]:focus {
+    outline: none;
+    border-color: #007BFF;
+    box-shadow: 0 0 5px #007BFFaa;
+  }
+  button#addBtn {
+    background: #007BFF;
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 0 1.5rem;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  button#addBtn:hover {
+    background: #0056b3;
+  }
+  ul#taskList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  li.task {
+    background: white;
+    margin-bottom: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.05);
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.3s;
+  }
+  li.task:hover {
+    background: #e6f0ff;
+  }
+  span.taskText {
+    flex: 1;
+    font-size: 1rem;
+    color: #333;
+    transition: color 0.3s, text-decoration 0.3s;
+  }
+  span.taskText.completed {
+    color: #999;
+    text-decoration: line-through;
+  }
+  span.taskText .dueDate {
+    font-size: 0.8rem;
+    color: #666;
+    margin-left: 0.5rem;
+    font-style: italic;
+  }
+  button.editBtn {
+    background: #ffc107;
+    border: none;
+    padding: 0.3rem 0.7rem;
+    border-radius: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #333;
+    margin-left: 1rem;
+    transition: background 0.3s;
+  }
+  button.editBtn:hover {
+    background: #e0a800;
+    color: white;
+  }
+</style>
+</head>
+<body>
+
+<h2>Smart To-Do App</h2>
+
+<div id="inputContainer">
+  <input type="text" id="taskTitle" placeholder="Add a new task..." />
+  <input type="datetime-local" id="taskDateTime" />
+  <button id="addBtn">Add</button>
+</div>
+
+<ul id="taskList"></ul>
+
+<script>
+  const taskTitle = document.getElementById('taskTitle');
+  const taskDateTime = document.getElementById('taskDateTime');
+  const addBtn = document.getElementById('addBtn');
+  const taskList = document.getElementById('taskList');
+
+  let tasks = [];
+
+  addBtn.addEventListener('click', () => {
+    const title = taskTitle.value.trim();
+    const dateTime = taskDateTime.value;
+
+    if (!title) {
+      alert('Please enter a task title!');
+      taskTitle.focus();
+      return;
+    }
+
+    tasks.push({
+      id: Date.now(),
+      title,
+      dateTime,
+      completed: false
+    });
+
+    taskTitle.value = '';
+    taskDateTime.value = '';
+    taskTitle.focus();
+
+    renderTasks();
+  });
+
+  function toggleComplete(id) {
+    tasks = tasks.map(task =>
+      task.id === id ? { ...task, completed: !task.completed } : task
+    );
+    renderTasks();
+  }
+
+  function editTask(id) {
+    const task = tasks.find(t => t.id === id);
+    const newTitle = prompt('Edit your task:', task.title);
+    if (newTitle !== null && newTitle.trim() !== '') {
+      task.title = newTitle.trim();
+      renderTasks();
+    }
+  }
+
+  function renderTasks() {
+    taskList.innerHTML = '';
+    tasks.forEach(task => {
+      const li = document.createElement('li');
+      li.className = 'task';
+
+      const span = document.createElement('span');
+      span.className = 'taskText';
+      span.textContent = task.title;
+      if (task.completed) span.classList.add('completed');
+
+      if (task.dateTime) {
+        const dueSpan = document.createElement('span');
+        dueSpan.className = 'dueDate';
+        dueSpan.textContent = `(Due: ${new Date(task.dateTime).toLocaleString()})`;
+        span.appendChild(dueSpan);
+      }
+
+      span.addEventListener('click', () => toggleComplete(task.id));
+
+      const editBtn = document.createElement('button');
+      editBtn.className = 'editBtn';
+      editBtn.textContent = 'Edit';
+      editBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        editTask(task.id);
+      });
+
+      li.appendChild(span);
+      li.appendChild(editBtn);
+      taskList.appendChild(li);
+    });
+  }
+</script>
+
+</body>
+</html>
